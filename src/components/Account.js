@@ -1,4 +1,4 @@
-// Copyright 2019 The FairDataSociety Authors
+﻿// Copyright 2019 The FairDataSociety Authors
 // This file is part of the FairDataSociety library.
 //
 // The FairDataSociety library is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ class Account extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         var mustUpdate = (nextProps.account !== this.state.account);
-        console.log(mustUpdate);
+        //console.log(mustUpdate);
 
         if (mustUpdate || this.props.account!==undefined && this.state.account===null) {
             this.setAccount(this.props.account);
@@ -48,7 +48,7 @@ class Account extends React.Component {
         await this.checkApllicationDomain(acc);
         await this.getBalance(acc);
 
-        console.log(acc);
+        //console.log(acc);
     }
     async setMultiboxData(mbd) {
         this.setState({ multiboxData: mbd });
@@ -56,7 +56,7 @@ class Account extends React.Component {
     }
     async setBalance(b) {
         console.log(this.state.balance);
-        this.setState({ balance: "" + b.substr(0, b.length - 1) });
+        this.setState({ balance: "" + b.substr(0, b.length - 5) });
         this.props.app.setBalance(b);
         this.forceUpdate();
     }
@@ -67,6 +67,8 @@ class Account extends React.Component {
         console.log(multiboxData);
     }
     async checkApllicationDomain(account) {
+        //let applicationNodeExists = await account.Mail.Multibox.createPath(account, this.props.applicationDomain, this.state.multiboxData.id);
+
         let applicationNodeExists = await account.Mail.Multibox.createPath(account, this.props.applicationDomain, this.state.multiboxData.id);
         if (applicationNodeExists > 0) {
             await this.updateMultibox(account);
@@ -83,9 +85,10 @@ class Account extends React.Component {
         if (this.state.account === null) return <div > No account  </div>;
 
         return <div className="accountWindow">
-            Account Name <strong>{this.state.account.subdomain} </strong>
-            Balance <strong>{this.state.balance} D3X</strong><br />
-            <small className="settings" onClick={() => this.props.app.toggleAccountSettings()}>+</small>
+            <strong className="settings" onClick={() => this.props.app.toggleAccountSettings()}> ⚙ </strong>
+            Account: <strong>{this.state.account.subdomain} </strong>
+            Balance: <strong>{this.state.balance} D3X</strong>
+            
         </div>
     }
 }
