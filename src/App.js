@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import FDS from 'fds';
 
@@ -8,6 +7,7 @@ import AccountLogin from './components/AccountLogin';
 import AccountSettings from './components/AccountSettings.js';
 import ReceivedMessages from './components/ReceivedMessages.js';
 import SentMessages from './components/SentMessages.js';
+import Contacts from './components/Contacts.js';
 
 window.FDS = new FDS({
     swarmGateway: 'https://swarm.fairdatasociety.org',
@@ -65,6 +65,7 @@ class App extends Component {
 
         let receivedMessages = this.state.account ? <ReceivedMessages account={this.state.account} app={this} query="" /> : null;
         let sentMessages = this.state.account ? <SentMessages account={this.state.account} app={this} query="" /> : null;
+        let contacts = this.state.account ? <Contacts account={this.state.account} app={this} query="" /> : null;
 
         return (
             <div className="App">
@@ -73,6 +74,7 @@ class App extends Component {
                 {accountSettings} 
                 {receivedMessages} 
                 {sentMessages} 
+                {contacts}
             <pre>{this.state.completed}</pre>
             <pre>{this.state.results}</pre>
             <pre>{this.state.output}</pre>

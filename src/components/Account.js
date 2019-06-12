@@ -34,9 +34,11 @@ class Account extends React.Component {
         var mustUpdate = (nextProps.account !== this.state.account);
         //console.log(mustUpdate);
 
-        if (mustUpdate || this.props.account!==undefined && this.state.account===null) {
-            this.setAccount(this.props.account);
-            this.forceUpdate();
+        if (this.state.account === null) {
+            if (mustUpdate || this.props.account !== undefined) {
+                this.setAccount(this.props.account);
+                this.forceUpdate();
+            }
         }
         return mustUpdate;
     }
