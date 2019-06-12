@@ -24,7 +24,7 @@ class Message extends React.Component {
     //this.addReceived({ id: id, isHidden: false, message: message, content: content, data: reader.result });
     
     viewPayload(m) {
-        alert(m.decodedToken);
+        alert(JSON.stringify(m.decodedToken));
     }
 
     downloadData(message) {
