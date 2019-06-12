@@ -6,7 +6,7 @@ import FDS from 'fds';
 import Account from './components/Account';
 import AccountLogin from './components/AccountLogin';
 import AccountSettings from './components/AccountSettings.js';
-import ReceiveMessages from './components/ReceiveMessages.js';
+import ReceivedMessages from './components/ReceivedMessages.js';
 import SentMessages from './components/SentMessages.js';
 
 window.FDS = new FDS({
@@ -63,7 +63,7 @@ class App extends Component {
         let accountLogin = this.state.account ? null : <AccountLogin app={this} />;
         let accountSettings = this.state.accountSettingsVisible ? <AccountSettings account={this.state.account} app={this} /> : null;
 
-        let receivedMessages = this.state.account ? <ReceiveMessages account={this.state.account} app={this} query="" /> : null;
+        let receivedMessages = this.state.account ? <ReceivedMessages account={this.state.account} app={this} query="" /> : null;
         let sentMessages = this.state.account ? <SentMessages account={this.state.account} app={this} query="" /> : null;
 
         return (
