@@ -49,7 +49,8 @@ class ReceiveMessages extends React.Component {
             account: null,
             receiving: false,
             multiboxData: null,
-            receivedMessages: []
+            receivedMessages: [],
+            visible: true
         }
     }
     componentDidMount() {
@@ -78,9 +79,6 @@ class ReceiveMessages extends React.Component {
             msg.decodedToken = await this.props.consentGen.decode(msg.data); //, { complete: true });
 
             if (msg.decodedToken !== null) {
-
-                //console.log(msg.decodedToken.payload.publicKey === pubKey);
-                //console.log(msg.decodedToken.payload.publicKey, pubKey);
                 msg.verified = await this.props.consentGen.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
 
@@ -121,6 +119,8 @@ class ReceiveMessages extends React.Component {
         await this.setState({ receiving: false });
     }
 
+    async toggleVisible() { await this.setState({ visible: !this.state.visible }); this.forceUpdate(); }
+
     render() {
         if (this.props.account === null) return <div > wait  </div>;
         if (this.state.account === null) return <div > wating for account  </div>;
@@ -137,8 +137,13 @@ class ReceiveMessages extends React.Component {
                 return false;
             });
         }
+
+        let toggle = <div onClick={() => this.toggleVisible()}> Received: <strong>{this.state.receivedMessages.length} </strong></div>
+
+        if (!this.state.visible) return <div>{toggle}</div>; 
+
         return <div className="receivedMessagesWindow">
-            Received: <strong>{this.state.receivedMessages.length} </strong>
+            {toggle}
             {receivedItems.map(m =>
                 <small key={m.id}>
                     <Message message={m} />

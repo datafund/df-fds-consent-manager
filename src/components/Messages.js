@@ -1,4 +1,4 @@
-// Copyright 2019 The FairDataSociety Authors
+﻿// Copyright 2019 The FairDataSociety Authors
 // This file is part of the FairDataSociety library.
 //
 // The FairDataSociety library is free software: you can redistribute it and/or modify
@@ -27,21 +27,27 @@ class Message extends React.Component {
         alert(m.decodedToken);
     }
 
+    downloadData(message) {
+        if (typeof message.saveAs !== "undefined") //
+            message.saveAs(); // contains a message
+    }
+
     render() {
         //if (this.props.message === null) return <div > wait  </div>;
         let m = this.props.message;
         if (!m.isConsentRecepit) return null; //<div><strong>not consent recepit</strong></div>;
 
         let consentID = m.decodedToken !== null ? m.decodedToken.payload.consentReceiptID : "can't decode"; //m.data; 
-        let verified = m.verified ? "SIGNATURE VERIFIED" : "INVALID SIGNATURE"; 
+        let verified = m.verified ? "SIGNATURE VERIFIED" : "INVALID  SIGNATURE"; 
         let fromTo = m.decodedToken !== null ? m.message.from + "->" +  m.message.to : null; 
         //console.log(m.decodedToken);
         //if (m.isHidden) return null; 
         return <div className="consentDisplayPanel">
-               <div className="consentItem" onClick={() => this.viewPayload(m)}>
-                {verified} {consentID} {fromTo} 
-                </div>
-        </div>
+                {verified}
+                <small className="dataDownload" onClick={() => this.downloadData(m.message)}> ▼ </small>
+                <small className="consentItem" onClick={() => this.viewPayload(m)}> {consentID} </small>
+                <small> {fromTo}  </small>
+               </div>
     } /*<br /> {m.id}*/
 }
 

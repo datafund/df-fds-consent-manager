@@ -23,7 +23,8 @@ class SentMessages extends React.Component {
         super(props);
         this.state = {
             account: null,
-            sentMessages: []
+            sentMessages: [],
+            visible: false
         }
     }
     componentDidMount() {
@@ -48,6 +49,14 @@ class SentMessages extends React.Component {
         //await this.updateMultibox(acc);
     }
     async addSent(msg) {
+        try {
+            msg.decodedToken = await this.props.consentGen.decode(msg.data); //, { complete: true });
+
+            if (msg.decodedToken !== null) {
+                msg.verified = await this.props.consentGen.verify(msg.decodedToken.payload.publicKey, msg.data);
+            }
+        } catch (err) { console.error(err); }
+
         this.setState({ sentMessages: [msg, ...this.state.sentMessages] });
         //console.log("add sent", msg);
         this.forceUpdate();
@@ -55,6 +64,7 @@ class SentMessages extends React.Component {
     async findSent(msgId) {
         return this.state.sentMessages.find(msg => msg.id === msgId);
     }
+
 
     async getSentMessages(context) {
         if (this.state.receiving) return;
@@ -82,6 +92,8 @@ class SentMessages extends React.Component {
         await this.setState({ receiving: false });
     }
 
+    async toggleVisible() { await this.setState({ visible: !this.state.visible }); this.forceUpdate(); }
+
     render() {
         if (this.props.account === null) return <div > wait  </div>;
         if (this.state.account === null) return <div > wating for account  </div>;
@@ -98,11 +110,16 @@ class SentMessages extends React.Component {
                 return false;
             });
         }
+
+        let toggle = <div onClick={() => this.toggleVisible()}> Sent: <strong>{this.state.sentMessages.length} </strong></div>
+
+        if (!this.state.visible) return <div>{toggle}</div>; 
+
         return <div className="sentMessagesWindow">
-            Sent: <strong>{this.state.sentMessages.length} </strong>
+            {toggle}
             {sentItems.map(m =>
                 <small key={m.id}>
-                    {/* <Message message={m} /> */}
+                    { <Message message={m} /> }
                 </small>)}
         </div>
     }
