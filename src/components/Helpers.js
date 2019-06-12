@@ -13,13 +13,14 @@ export const hashFnv32a = (str) => {
     return hval >>> 0;
 }
 export const ExtractMessage = (msg) => {
+    /*
     try {
         var split = msg.split('-message:', 2);
         if (split.length > 1)
             return split[1];
     } catch (err) {
         console.error(err);
-    }
+    }*/
 
     return msg;
 }

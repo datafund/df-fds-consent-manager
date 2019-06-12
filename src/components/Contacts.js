@@ -28,7 +28,7 @@ class Contacts extends React.Component {
     }
     componentDidMount() {
         this.setAccount(this.props.account);
-        this.interval = setInterval(() => this.getContacts(), 13000);
+        this.interval = setInterval(() => this.getContacts(), 5000);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -45,6 +45,7 @@ class Contacts extends React.Component {
 
     async setAccount(acc) {
         await this.setState({ account: acc });
+        await this.getContacts();
     }
     async getContacts() {
         let contacts = await this.state.account.getContacts();
@@ -79,7 +80,7 @@ class Contacts extends React.Component {
     render() {
         if (this.props.account === null) return <div > wait  </div>;
         if (this.state.account === null) return <div > wating for account  </div>;
-        if (this.state.contacts.length === 0) return <div > no contacts </div>;
+        //if (this.state.contacts.length === 0) return <div > no contacts </div>;
 
         /*
         let q = this.props.query;
@@ -94,6 +95,7 @@ class Contacts extends React.Component {
         const contacts = this.state.contacts; 
 
         return <div className="contactsWindow">
+            Contacts: <strong>{contacts.length}</strong>
             {Object.entries(contacts).map(([key, index]) => (
                 contacts[key].visible ?
                     <small key={key} onClick={() => this.selectContact({ key })} className="contactsItem"> {key}

@@ -22,15 +22,26 @@ class Message extends React.Component {
         super(props);
     }
     //this.addReceived({ id: id, isHidden: false, message: message, content: content, data: reader.result });
+    
+    viewPayload(m) {
+        alert(m.decodedToken);
+    }
 
     render() {
-        if (this.props.message === null) return <div > wait  </div>;
+        //if (this.props.message === null) return <div > wait  </div>;
         let m = this.props.message;
-        if (m.isHidden) return null; 
-        return <div className="receivedMessagesWindow">
-            {m.id} {m.content} {m.isConsentRecepit}
+        if (!m.isConsentRecepit) return null; //<div><strong>not consent recepit</strong></div>;
+
+        let consentID = m.decodedToken !== null ? m.decodedToken.payload.consentReceiptID : m.data; 
+        let verified = m.verified ? "VERIFIED" : "INVALID SIGNATURE"; 
+        //console.log(m.decodedToken);
+        //if (m.isHidden) return null; 
+        return <div className="consentDisplayPanel">
+               <div className="consentItem" onClick={() => this.viewPayload(m)}>
+                  {verified} id: {consentID} {m.message.from} -> {m.message.to} 
+                </div>
         </div>
-    }
+    } /*<br /> {m.id}*/
 }
 
 export default Message;

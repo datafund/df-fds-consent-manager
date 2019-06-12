@@ -18,6 +18,8 @@ import React from 'react';
 import Message from './Messages';
 import * as Helpers from './Helpers.js';
 
+
+
 class ReceiveMessages extends React.Component {
     constructor(props) {
         super(props);
@@ -30,7 +32,7 @@ class ReceiveMessages extends React.Component {
     }
     componentDidMount() {
         this.setAccount(this.props.account);
-        this.interval = setInterval(() => this.getReceivedMessages(), 5000);
+        this.interval = setInterval(() => this.getReceivedMessages(this), 2000);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -49,39 +51,42 @@ class ReceiveMessages extends React.Component {
         await this.setState({ account: acc });
         //await this.updateMultibox(acc);
     }
-    async setMultiboxData(mbd) {
-        this.setState({ multiboxData: mbd });
-        this.setState({ mbnonce: this.state.mbnonce + 1 });
-    }
-    async updateMultibox(account) {
-        var multiboxData = await account.Mail.Multibox.traverseMultibox(account, account.subdomain);
-        this.setMultiboxData(multiboxData);
-
-        console.log(multiboxData);
-    }
     async addReceived(msg) {
-        this.setState({ receivedMessages: [msg, ...this.state.receivedMessages] }); 
+        try {
+            
+            msg.decodedToken = await this.props.consentGen.decode(msg.data);
+            msg.verified = await this.props.consentGen.verify(msg.decodedToken.payload.publicKey, msg.data);
+
+            //console.log(msg);
+        } catch (err) { console.error(err); }
+        
+        await this.setState({ receivedMessages: [msg, ...this.state.receivedMessages] }); 
+        //console.log("add received", msg, this.state.receivedMessages, this);
+        this.forceUpdate();
     }
     async findReceived(msgId) {
         return this.state.receivedMessages.find(msg => msg.id === msgId);
     } 
     
-    async getReceivedMessages() {
+    async getReceivedMessages(context) {
         if (this.state.receiving) return; 
         if (this.state.account===null) return; 
 
         await this.setState({ receiving: true });
         let messages = await this.state.account.messages('received', window.FDS.applicationDomain);
         var reader = new FileReader();
+        
         await Helpers.asyncForEach(messages, async (message) => {
             var file = await message.getFile(); // what if this fails? 
             var isCRJWT = Helpers.IsConsentRecepit(file.name);
             var id = Helpers.hashFnv32a(message.hash.address);
 
-            if (!this.findReceived(id)) {
+            if (!await this.findReceived(id)) {
                 reader.onload = function (e) {
                     let content = Helpers.ExtractMessage(reader.result);
-                    this.addReceived({ id: id, isHidden: false, message: message, content: content, data: reader.result, isConsentRecepit: isCRJWT });
+                    context.addReceived({ id: id, isHidden: false, message: message, data: reader.result, isConsentRecepit: isCRJWT, decodedToken: null, verified:false });
+
+                    //console.log("reading", message);
                 }
                 await reader.readAsText(await this.state.account.receive(message));
             }
@@ -93,7 +98,7 @@ class ReceiveMessages extends React.Component {
         if (this.props.account === null) return <div > wait  </div>;
         if (this.state.account === null) return <div > wating for account  </div>;
         if (this.state.receivedMessages === null) return <div > no messages </div>;
-        if (this.state.receivedMessages.length === 0 ) return <div > no messages received </div>;
+        //if (this.state.receivedMessages.length === 0 ) return <div > no messages received </div>;
         
         let q = this.props.query;
         let receivedItems = this.state.receivedMessages;
@@ -101,7 +106,7 @@ class ReceiveMessages extends React.Component {
             receivedItems = receivedItems.filter(m => {
                 if (m.isHidden) return false;
                 //if (m.sender.search(q) !== -1) return true;
-                if (m.contents.search(q) !== -1) return true;
+                //if (m.data.search(q) !== -1) return true;
                 return false;
             });
         }

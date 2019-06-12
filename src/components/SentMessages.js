@@ -28,7 +28,7 @@ class SentMessages extends React.Component {
     }
     componentDidMount() {
         this.setAccount(this.props.account);
-        this.interval = setInterval(() => this.getSentMessages(), 5000);
+        this.interval = setInterval(() => this.getSentMessages(this), 2000);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -49,27 +49,32 @@ class SentMessages extends React.Component {
     }
     async addSent(msg) {
         this.setState({ sentMessages: [msg, ...this.state.sentMessages] });
+        //console.log("add sent", msg);
+        this.forceUpdate();
     }
     async findSent(msgId) {
-        return this.state.receivedMessages.find(msg => msg.id === msgId);
+        return this.state.sentMessages.find(msg => msg.id === msgId);
     }
 
-    async getSentMessages() {
+    async getSentMessages(context) {
         if (this.state.receiving) return;
         if (this.state.account === null) return;
 
         await this.setState({ receiving: true });
         let messages = await this.state.account.messages('sent', window.FDS.applicationDomain);
         var reader = new FileReader();
+        
         await Helpers.asyncForEach(messages, async (message) => {
             var file = await message.getFile(); // what if this fails? 
             var isCRJWT = Helpers.IsConsentRecepit(file.name);
             var id = Helpers.hashFnv32a(message.hash.address);
 
-            if (!this.findReceived(id)) {
+            if (!await this.findSent(id)) {
+                //console.log(message);
+
                 reader.onload = function (e) {
                     let content = Helpers.ExtractMessage(reader.result);
-                    this.addSent({ id: id, isHidden: false, message: message, content: content, data: reader.result, isConsentRecepit: isCRJWT });
+                    context.addSent({ id: id, isHidden: false, message: message, data: reader.result, isConsentRecepit: isCRJWT, decodedToken: null, verified: false });
                 }
                 await reader.readAsText(await this.state.account.receive(message));
             }
@@ -81,7 +86,7 @@ class SentMessages extends React.Component {
         if (this.props.account === null) return <div > wait  </div>;
         if (this.state.account === null) return <div > wating for account  </div>;
         if (this.state.sentMessages === null) return <div > no messages </div>;
-        if (this.state.sentMessages.length === 0) return <div > no messages sent </div>;
+        //if (this.state.sentMessages.length === 0) return <div > no messages sent </div>;
 
         let q = this.props.query;
         let sentItems = this.state.sentMessages;
