@@ -33,10 +33,10 @@ class ConsentGen {
 
         try {
             let legit = jwt.verify(jwtToken, publicKey, options); 
-            console.log("Signature VALID!", legit);
+            //console.log("Signature VALID!", legit);
             return true;
         } catch (e) {
-            console.log("Invalid signature!", jwtToken, publicKey, options);
+            //console.log("Invalid signature!", jwtToken, publicKey, options);
         }
         return false;
     }

@@ -102,7 +102,7 @@ class SentMessages extends React.Component {
             Sent: <strong>{this.state.sentMessages.length} </strong>
             {sentItems.map(m =>
                 <small key={m.id}>
-                    <Message message={m} />
+                    {/* <Message message={m} /> */}
                 </small>)}
         </div>
     }
