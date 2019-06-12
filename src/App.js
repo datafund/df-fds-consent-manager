@@ -10,6 +10,7 @@ import SentMessages from './components/SentMessages.js';
 import Contacts from './components/Contacts.js';
 
 import ConsentGen from './components/fd-consentgen.js';
+import { decode } from 'querystring';
 
 window.FDS = new FDS({
     swarmGateway: 'https://swarm.fairdatasociety.org',
@@ -40,6 +41,10 @@ class App extends Component {
           completed: "",
           output: "",
           results: "",
+          recepient: "",
+          recepientValid: false,
+          encodedToken: "",
+          tokenValid: false,
 
           consentGen: new ConsentGen('issuer', 'subject', 'audience', "12h", "RS256"),
           accountRef: React.createRef()
@@ -84,9 +89,46 @@ class App extends Component {
     }  
     async sendTestToken() {
         let data = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoiMSIsImp1cmlzZGljdGlvbiI6IlNJIiwiY29uc2VudFRpbWVzdGFtcCI6MTEyMjMxMjMxMiwiY29sbGVjdGlvbk1ldGhvZCI6Ik1ldGhvZCIsImNvbnNlbnRSZWNlaXB0SUQiOiIxMjMxNDEyMzEyMzEyMzEyMyIsInB1YmxpY0tleSI6Ii0tLS0tQkVHSU4gUFVCTElDIEtFWS0tLS0tXG5NSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQW56eWlzMVpqZk5CMGJCZ0tGTVN2XG52a1R0d2x2QnNhSnE3UzV3QStremVWT1ZwVld3a1dkVmhhNHMzOFhNL3BhL3lyNDdhdjcrejNWVG12RFJ5QUhjXG5hVDkyd2hSRUZwTHY5Y2o1bFRlSlNpYnlyL01ybS9ZdGpDWlZXZ2FPWUlod3JYd0tMcVByLzExaW5Xc0FrZkl5XG50dkhXVHhaWUVjWExnQVhGdVV1YVMzdUY5Z0VpTlF3ekdUVTF2MEZxa3FUQnI0QjhuVzNIQ040N1hVdTB0OFkwXG5lK2xmNHM0T3hRYXdXRDc5SjkvNWQzUnkwdmJWM0FtMUZ0R0ppSnZPd1JzSWZWQ2hEcFlTdFRjSFRDTXF0dldiXG5WNkwxMUJXa3B6R1hTVzRIdjQzcWErR1NZT0QyUVU2OE1iNTlvU2syT0IrQnRPTHBKb2ZtYkdFR2d2bXd5Q0k5XG5Nd0lEQVFBQlxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tIiwibGFuZ3VhZ2UiOiJTSSIsInBpaVByaW5jaXBhbElkIjoiMzEyMyIsInBpaUNvbnRyb2xsZXJzIjpbeyJwaWlDb250cm9sbGVyIjoiVGV4IiwiY29udGFjdCI6InRleCBhdCBmZHMiLCJhZGRyZXNzIjp7fSwiZW1haWwiOiJ0ZXhAZmRzLm9yZyIsInBob25lIjoiMTIzNTQxMjMiLCJwaWlDb250cm9sbGVyVXJsIjoid3d3LmZkcy5vcmcifV0sInNlcnZpY2VzIjpbeyJzZXJ2aWNlIjoiMzEyMyIsInB1cnBvc2VzIjpbeyJwdXJwb3NlIjoiMTIzIiwiY29uc2VudFR5cGUiOiJjb25zZW50IHR5cGUiLCJwdXJwb3NlQ2F0ZWdvcnkiOlsiMTIzMTIiXX1dfV0sImlhdCI6MTU2MDM1MTQ5NSwiZXhwIjoxNTYwMzk0Njk1LCJhdWQiOiJhdWRpZW5jZSIsImlzcyI6Imlzc3VlciIsInN1YiI6InN1YmplY3QifQ.b2PWMksGYtd9liRhAN8dYYtbLPTkHAdlRMPgGphOHFT-MdIKyZP5HJXphLcZJG8Xii1lLlqb2KL5K6mmBdS0b5SmhKX8hSEyluy4vq0c2eIJCbW952FUDqU4G6TUv0cY5SMt7Zu2IXDDOTACmEaRgkTtFOqTWJwJ5K0pd0WCqPzmaniAhSe_u1eIbx9qhGluakAhIcrmPZh9BRUrq9vWlzOeClaFJas9oMW18x291C3C6rFUHX6a4yftm2Ht8kk8oUtLuoS9ZX_vRqns-nchLTSkouE09UnaKtyVH5za6gC4j8h4KpCqV_GfXa0HDtXErHd6UA2MusT_siRn7bHYGA";
-        this.sendContents(this.state.account, this.state.account.subdomain, data,
+        
+        await this.setRecepient(this.state.account.subdomain);
+
+        await this.setTokenEncoded(data);
+    }
+
+    async sendCRJWT() {
+        this.sendContents(this.state.account, this.state.recepient, this.state.encodedToken,
             (output) => { this.setOutput(output, this); },
-            (results) => { this.setResults(results, this);} ); 
+            (results) => { this.setResults(results, this); });
+    }
+
+    setRecepientValid(b) { this.setState({ recepientValid: b }); } // will show recepient invalid status
+    setRecepient(r) { this.setState({ recepient: r }); this.checkContact(this.state.account, r); }
+    async handleRecepient(e) { this.setRecepient(e.target.value) } 
+    async checkContact(account, subdomain) {
+        try {
+            await account.lookupContact(subdomain, console.log, console.log, console.log);
+            console.log("address:" + await account.getAddressOf(subdomain));
+            this.setRecepientValid(true);
+        } catch (err) {
+            console.error(`>>>>>>> ${err}`, err);
+            this.setRecepientValid(false);
+        }
+    }
+
+    async handleCREncoded(e) { await this.setTokenEncoded( e.target.value); }
+    async setTokenEncoded(b) { await this.setState({ encodedToken: b }); await this.verifyToken(this.state.encodedToken); } 
+    async setTokenValid(b) { await this.setState({ tokenValid: b }); } 
+    async verifyToken(e) {
+        try {
+            let decodedToken = await this.state.consentGen.decode(e); 
+            if (decodedToken === null) this.setResults("not an encoded CR JWT token", this); 
+            let verified = await this.state.consentGen.verify(decodedToken.payload.publicKey, e);
+
+            this.setTokenValid(verified);
+            this.setState({ results: verified ? "SIGNATURE VERIFIED" : "INVALID SIGNATURE" });
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     render() {
@@ -96,7 +138,14 @@ class App extends Component {
 
         let receivedMessages = this.state.account ? <ReceivedMessages account={this.state.account} app={this} consentGen={this.state.consentGen} query="" /> : null;
         let sentMessages = this.state.account ? <SentMessages account={this.state.account} app={this} consentGen={this.state.consentGen} query="" /> : null;
-        let contacts = this.state.account ? <Contacts account={this.state.account} app={this} query="" /> : null;
+        let contacts = this.state.account ? <Contacts account={this.state.account} app={this} query="" /> : null; 
+
+        let toRecepient = <input placeholder="Recepient to send to" value={this.state.recepient} onChange={(e) => this.handleRecepient(e)} className="messageReceiverBox" />;
+        let messageToSend = <input placeholder="Enter encoded CR" value={this.state.encodedToken} onChange={(e) => this.handleCREncoded(e)}  className="messageInputBox" />;
+        let sendButton = (this.state.recepientValid === true && this.state.tokenValid === true) ? <button onClick={() => this.sendCRJWT()}>Send</button> : null;       
+
+
+        let sendData = this.state.account ? <div>{toRecepient}{messageToSend}{sendButton}</div>: null;
 
         return (
             <div className="App">
@@ -106,11 +155,13 @@ class App extends Component {
                 {receivedMessages} 
                 {sentMessages} 
                 {contacts}
-            <pre>{this.state.completed}</pre>
-            <pre>{this.state.results}</pre>
-            <pre>{this.state.output}</pre>
 
-            <button onClick={() => this.sendTestToken()}>Send test token </button>
+                <button onClick={() => this.sendTestToken()}>Create test ConsentReceipt token for yourself </button><br/>
+                {sendData}
+
+                <pre>{this.state.completed}</pre>
+                <pre>{this.state.results}</pre>
+                <pre>{this.state.output}</pre>
           </div>
         );
       }

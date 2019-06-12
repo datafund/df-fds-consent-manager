@@ -98,7 +98,7 @@ class SentMessages extends React.Component {
                 return false;
             });
         }
-        return <div className="receivedMessagesWindow">
+        return <div className="sentMessagesWindow">
             Sent: <strong>{this.state.sentMessages.length} </strong>
             {sentItems.map(m =>
                 <small key={m.id}>

@@ -33,7 +33,7 @@ class Message extends React.Component {
         if (!m.isConsentRecepit) return null; //<div><strong>not consent recepit</strong></div>;
 
         let consentID = m.decodedToken !== null ? m.decodedToken.payload.consentReceiptID : "can't decode"; //m.data; 
-        let verified = m.verified ? "VERIFIED" : "INVALID SIGNATURE"; 
+        let verified = m.verified ? "SIGNATURE VERIFIED" : "INVALID SIGNATURE"; 
         let fromTo = m.decodedToken !== null ? m.message.from + "->" +  m.message.to : null; 
         //console.log(m.decodedToken);
         //if (m.isHidden) return null; 

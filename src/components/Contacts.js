@@ -52,11 +52,13 @@ class Contacts extends React.Component {
         contacts.forEach((newContact) => {
             this.findContactOrAdd(newContact.subdomain);
         });
+        
     }
     async addContact(name) {
         var new_contacts = Object.assign({}, this.state.contacts);  // must copy 
         new_contacts[name] = { numReceived: 0, known: true, visible: true }; // add to array  
         await this.setState({ contacts: new_contacts });
+        this.forceUpdate();
     }
 
     async findContactOrAdd(name) {
@@ -76,6 +78,9 @@ class Contacts extends React.Component {
 
         this.setState({ contacts: cntcts });
     }  
+    async selectContact(e) {
+        this.props.app.setRecepient(e.key.toString());
+    }
 
     render() {
         if (this.props.account === null) return <div > wait  </div>;
@@ -95,14 +100,20 @@ class Contacts extends React.Component {
         const contacts = this.state.contacts; 
 
         return <div className="contactsWindow">
-            Contacts: <strong>{contacts.length}</strong>
+            Contacts: <strong>{contacts.length}</strong><br />
+
             {Object.entries(contacts).map(([key, index]) => (
                 contacts[key].visible ?
-                    <small key={key} onClick={() => this.selectContact({ key })} className="contactsItem"> {key}
-                        <small className="contactsCount"> {contacts[key].numReceived}</small></small>
+                    <div className="contactItem">
+                       <small key={key} onClick={() => this.selectContact({ key })} className="contactsItem">
+                          {key}
+                          <small className="contactsCount"> {contacts[key].numReceived}</small>
+                        </small>
+                    </div>
                     : null
-            ))
-            }
+    
+                ))
+                }
         </div>
     }
 }

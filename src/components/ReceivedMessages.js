@@ -18,7 +18,7 @@ import React from 'react';
 import Message from './Messages';
 import * as Helpers from './Helpers.js';
 
-import jwt from "jsonwebtoken";
+/*
 
 const public_key  =
     "----- BEGIN PUBLIC KEY-----\n"+
@@ -40,6 +40,7 @@ let pubKey= '-----BEGIN PUBLIC KEY-----\n' +
     'V6L11BWkpzGXSW4Hv43qa+GSYOD2QU68Mb59oSk2OB+BtOLpJofmbGEGgvmwyCI9\n' +
     'MwIDAQAB\n' +
     '-----END PUBLIC KEY-----';
+    */
 
 class ReceiveMessages extends React.Component {
     constructor(props) {
@@ -74,7 +75,7 @@ class ReceiveMessages extends React.Component {
     }
     async addReceived(msg) {
         try {
-            msg.decodedToken = await jwt.decode(msg.data, { complete: true });
+            msg.decodedToken = await this.props.consentGen.decode(msg.data); //, { complete: true });
 
             if (msg.decodedToken !== null) {
 
