@@ -18,9 +18,10 @@ import React from 'react';
 import Message from './Messages';
 import * as Helpers from './Helpers.js';
 
+import jwt from "jsonwebtoken";
 
-const pubKey =
-    "----- BEGIN PUBLIC KEY-----/n"+
+const public_key  =
+    "----- BEGIN PUBLIC KEY-----\n"+
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnzyis1ZjfNB0bBgKFMSv\n" +
     "vkTtwlvBsaJq7S5wA + kzeVOVpVWwkWdVha4s38XM / pa / yr47av7 + z3VTmvDRyAHc\n" +
     "aT92whREFpLv9cj5lTeJSibyr / Mrm / YtjCZVWgaOYIhwrXwKLqPr / 11inWsAkfIy\n" +
@@ -29,6 +30,16 @@ const pubKey =
     "V6L11BWkpzGXSW4Hv43qa + GSYOD2QU68Mb59oSk2OB + BtOLpJofmbGEGgvmwyCI9\n" +
     "MwIDAQAB\n" +
     "----- END PUBLIC KEY-----";
+
+let pubKey= '-----BEGIN PUBLIC KEY-----\n' +
+    'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnzyis1ZjfNB0bBgKFMSv\n' +
+    'vkTtwlvBsaJq7S5wA+kzeVOVpVWwkWdVha4s38XM/pa/yr47av7+z3VTmvDRyAHc\n' +
+    'aT92whREFpLv9cj5lTeJSibyr/Mrm/YtjCZVWgaOYIhwrXwKLqPr/11inWsAkfIy\n' +
+    'tvHWTxZYEcXLgAXFuUuaS3uF9gEiNQwzGTU1v0FqkqTBr4B8nW3HCN47XUu0t8Y0\n' +
+    'e+lf4s4OxQawWD79J9/5d3Ry0vbV3Am1FtGJiJvOwRsIfVChDpYStTcHTCMqtvWb\n' +
+    'V6L11BWkpzGXSW4Hv43qa+GSYOD2QU68Mb59oSk2OB+BtOLpJofmbGEGgvmwyCI9\n' +
+    'MwIDAQAB\n' +
+    '-----END PUBLIC KEY-----';
 
 class ReceiveMessages extends React.Component {
     constructor(props) {
@@ -63,18 +74,13 @@ class ReceiveMessages extends React.Component {
     }
     async addReceived(msg) {
         try {
-
-            //console.log(msg.data);
-            msg.decodedToken = await this.props.consentGen.decode(msg.data);
+            msg.decodedToken = await jwt.decode(msg.data, { complete: true });
 
             if (msg.decodedToken !== null) {
-                let data = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoiMSIsImp1cmlzZGljdGlvbiI6IlNJIiwiY29uc2VudFRpbWVzdGFtcCI6MTEyMjMxMjMxMiwiY29sbGVjdGlvbk1ldGhvZCI6Ik1ldGhvZCIsImNvbnNlbnRSZWNlaXB0SUQiOiIxMjMxNDEyMzEyMzEyMzEyMyIsInB1YmxpY0tleSI6Ii0tLS0tQkVHSU4gUFVCTElDIEtFWS0tLS0tXG5NSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQW56eWlzMVpqZk5CMGJCZ0tGTVN2XG52a1R0d2x2QnNhSnE3UzV3QStremVWT1ZwVld3a1dkVmhhNHMzOFhNL3BhL3lyNDdhdjcrejNWVG12RFJ5QUhjXG5hVDkyd2hSRUZwTHY5Y2o1bFRlSlNpYnlyL01ybS9ZdGpDWlZXZ2FPWUlod3JYd0tMcVByLzExaW5Xc0FrZkl5XG50dkhXVHhaWUVjWExnQVhGdVV1YVMzdUY5Z0VpTlF3ekdUVTF2MEZxa3FUQnI0QjhuVzNIQ040N1hVdTB0OFkwXG5lK2xmNHM0T3hRYXdXRDc5SjkvNWQzUnkwdmJWM0FtMUZ0R0ppSnZPd1JzSWZWQ2hEcFlTdFRjSFRDTXF0dldiXG5WNkwxMUJXa3B6R1hTVzRIdjQzcWErR1NZT0QyUVU2OE1iNTlvU2syT0IrQnRPTHBKb2ZtYkdFR2d2bXd5Q0k5XG5Nd0lEQVFBQlxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tIiwibGFuZ3VhZ2UiOiJTSSIsInBpaVByaW5jaXBhbElkIjoiMzEyMyIsInBpaUNvbnRyb2xsZXJzIjpbeyJwaWlDb250cm9sbGVyIjoiVGV4IiwiY29udGFjdCI6InRleCBhdCBmZHMiLCJhZGRyZXNzIjp7fSwiZW1haWwiOiJ0ZXhAZmRzLm9yZyIsInBob25lIjoiMTIzNTQxMjMiLCJwaWlDb250cm9sbGVyVXJsIjoid3d3LmZkcy5vcmcifV0sInNlcnZpY2VzIjpbeyJzZXJ2aWNlIjoiMzEyMyIsInB1cnBvc2VzIjpbeyJwdXJwb3NlIjoiMTIzIiwiY29uc2VudFR5cGUiOiJjb25zZW50IHR5cGUiLCJwdXJwb3NlQ2F0ZWdvcnkiOlsiMTIzMTIiXX1dfV0sImlhdCI6MTU2MDM0NzMwMCwiZXhwIjoxNTYwMzkwNTAwLCJhdWQiOiJhdWRpZW5jZSIsImlzcyI6Imlzc3VlciIsInN1YiI6InN1YmplY3QifQ.AEeJgfPbHWS8ouAZrOPb_DLe7cSyO59hfVIHLicpemn - 5oe7FTM25QhS0FSyKbZXdcYs - prjA6rjwjTatSHWx3xI3wRvH_txMwT2QjZRqSBvVgbaodfkinoIBpHglMezfTTc6dj0ng_ndTFt4N2KL26CqZ_XI - LVfHF5R8h - I8MK5uLzUI6ucGz8EhGTGvKDF_ - jMriWW5ESDMDLkNGNtfa9hdy1tNlR1Ndgs7ZwwOfeFnVbafqBZSUfzYFXuU8MPbOl9oT8dSBIBXO3fNXGuIP291g3X3EMxagveWeMeeNAT8G_o6VLntxG91mwaL5sFO5vwrC2mRetgi99wYmgkw";
-                let test = await this.props.consentGen.verify(pubKey, data);    
-                let opk = msg.decodedToken.payload.publicKey.replace("/n", "\n");
-                console.log("token verify" + test, pubKey, data, opk, msg.data);
 
-                console.log(msg.decodedToken.payload.publicKey === pubKey, data === msg.data);
-                msg.verified = await this.props.consentGen.verify(/*msg.decodedToken.payload.publicKey*/ opk, msg.data);
+                //console.log(msg.decodedToken.payload.publicKey === pubKey);
+                //console.log(msg.decodedToken.payload.publicKey, pubKey);
+                msg.verified = await this.props.consentGen.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
 
             //console.log(msg);

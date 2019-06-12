@@ -57,7 +57,7 @@ class Account extends React.Component {
         this.setState({ mbnonce: this.state.mbnonce + 1 });
     }
     async setBalance(b) {
-        console.log(this.state.balance);
+        //console.log(this.state.balance);
         this.setState({ balance: "" + b.substr(0, b.length - 5) });
         this.props.app.setBalance(b);
         this.forceUpdate();
