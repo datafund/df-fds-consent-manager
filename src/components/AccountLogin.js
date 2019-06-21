@@ -30,7 +30,7 @@ class AccountLogin extends React.Component {
             accountPass: ""
         }
 
-        this.unlockAccount("consent1xoxo11", "test");
+        //this.unlockAccount("consent1xoxo114", "test");
     }
     async createAccount(accountName, password) {
         if (accountName.length < 3) {
@@ -81,18 +81,20 @@ class AccountLogin extends React.Component {
         let accounts = await window.FDS.GetAccounts();
         console.log(`accounts in local storage: ${accounts.length} `);
     }
-    async unlockAccount(subdomain, password) {
+    unlockAccount(subdomain, password) {
         try {
-            let account = await window.FDS.UnlockAccount(subdomain.toLowerCase(), password);
+            let account = window.FDS.UnlockAccount(subdomain.toLowerCase(), password);
+            console.log(account);
             this.props.app.setAccount(account);
+            
         } catch (error) {
             this.handleError(error);
             console.error(error);
         }
     }
 
-    handleText(t) { this.setState({ textInfo: t }); }
-    handleError(t) { this.setState({ errorInfo: t }); }
+    handleText(t) { this.setState({ textInfo: t.toString() }); }
+    handleError(t) { this.setState({ errorInfo: t.toString() }); }
     handleAccountName(e) { this.setState({ accountName: e.target.value }); }
     handleAccountPass(e) { this.setState({ accountPass: e.target.value }); }
 
@@ -107,6 +109,8 @@ class AccountLogin extends React.Component {
         let enterAccountName = <input placeholder="name account" value={this.state.accountName} onChange={(e) => this.handleAccountName(e)} className="messageReceiverBox" />;
         let enterAccountPass = <input placeholder="password" type="password" value={this.state.accountPass} onChange={(e) => this.handleAccountPass(e)} className="messageReceiverBox" />;
         let login = <div className="createImport">{enterAccountName}<br />{enterAccountPass}<br />{unlockButton}<br />{createButton}<br />{importButton}</div>;
+
+        //console.log(enterAccountName, enterAccountPass, unlockButton, createButton, importButton);
 
         return <div className="loginWindow">
                     <input type="file" id="file" ref="fileUploader" onChange={(e) => this.walletOpened(e)} style={{ display: "none" }} />

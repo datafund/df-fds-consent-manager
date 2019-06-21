@@ -108,9 +108,8 @@ class ReceiveMessages extends React.Component {
 
             if (!await this.findReceived(id)) {
                 reader.onload = function (e) {
-                    let content = Helpers.ExtractMessage(reader.result);
+                    //let content = Helpers.ExtractMessage(reader.result);
                     context.addReceived({ id: id, isHidden: false, message: message, data: reader.result, isConsentRecepit: isCRJWT, decodedToken: null, verified:false });
-
                     //console.log("reading", message);
                 }
                 await reader.readAsText(await this.state.account.receive(message));

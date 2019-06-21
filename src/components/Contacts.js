@@ -15,8 +15,7 @@
 // along with the FairDataSociety library. If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
-import Message from './Messages';
-import * as Helpers from './Helpers.js';
+//import * as Helpers from './Helpers.js';
 
 class Contacts extends React.Component {
     constructor(props) {

@@ -15,12 +15,11 @@
 // along with the FairDataSociety library. If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
-import * as Helpers from './Helpers.js';
 
 class Message extends React.Component {
-    constructor(props) {
+    /*constructor(props) {
         super(props);
-    }
+    }*/
     //this.addReceived({ id: id, isHidden: false, message: message, content: content, data: reader.result });
     
     viewPayload(m) {

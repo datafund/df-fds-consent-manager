@@ -83,7 +83,7 @@ class SentMessages extends React.Component {
                 //console.log(message);
 
                 reader.onload = function (e) {
-                    let content = Helpers.ExtractMessage(reader.result);
+                    //let content = Helpers.ExtractMessage(reader.result);
                     context.addSent({ id: id, isHidden: false, message: message, data: reader.result, isConsentRecepit: isCRJWT, decodedToken: null, verified: false });
                 }
                 await reader.readAsText(await this.state.account.receive(message));
