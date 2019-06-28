@@ -30,7 +30,7 @@ class AccountLogin extends React.Component {
             accountPass: ""
         }
 
-        //this.unlockAccount("consent1xoxo114", "test");
+        //this.unlockAccount("consent1xoxo115", "test");
     }
     async createAccount(accountName, password) {
         if (accountName.length < 3) {
@@ -74,19 +74,19 @@ class AccountLogin extends React.Component {
                 }
             } catch (err2) {
                 console.error(err2);
-                this.handleError("can't unlock, bad pass?");
+                this.handleError("can't unlock, bad pass? expecting wallet in form: <fds-wallet-ACCOUNTNAME-backup> ?");
             }
         }
 
         let accounts = await window.FDS.GetAccounts();
         console.log(`accounts in local storage: ${accounts.length} `);
     }
-    unlockAccount(subdomain, password) {
+
+    async unlockAccount(subdomain, password) {
         try {
-            let account = window.FDS.UnlockAccount(subdomain.toLowerCase(), password);
+            let account = await window.FDS.UnlockAccount(subdomain.toLowerCase(), password);
             console.log(account);
-            this.props.app.setAccount(account);
-            
+            await this.props.app.setAccount(account);
         } catch (error) {
             this.handleError(error);
             console.error(error);
@@ -99,7 +99,6 @@ class AccountLogin extends React.Component {
     handleAccountPass(e) { this.setState({ accountPass: e.target.value }); }
 
     processOpenWalletFile(e)    { this.refs.fileUploader.click(); }
-
 
     render() {
         let createButton = <button onClick={() => this.createAccount(this.state.accountName, this.state.accountPass)}> Create </button>;

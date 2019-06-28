@@ -10,6 +10,9 @@ import SentMessages from './components/SentMessages.js';
 import Contacts from './components/Contacts.js';
 
 import ConsentGen from './components/fd-consentgen.js';
+
+import * as Test_FairData from './lib/test_fairdata.js'; 
+
 //import { decode } from 'querystring';
 
 window.FDS = new FDS({
@@ -28,7 +31,8 @@ window.FDS = new FDS({
     applicationDomain: "/shared/consents/"
 }); 
 
-
+// ENABLE TO RUN TEST 
+// Test_FairData.RunTestFairData(window.FDS);
 
 class App extends Component {
 
@@ -76,6 +80,7 @@ class App extends Component {
 
     async setAccount(acc) {
         if (acc === null || acc === undefined) return; 
+        console.log(acc);
 
         this.setState({ account: acc });
         acc.setApplicationDomain(window.FDS.applicationDomain);
@@ -146,7 +151,6 @@ class App extends Component {
         let messageToSend = <input placeholder="Enter encoded CR" value={this.state.encodedToken} onChange={(e) => this.handleCREncoded(e)}  className="messageInputBox" />;
         //let sendButton = (this.state.recepientValid === true && this.state.tokenValid === true) ? <button onClick={() => this.sendCRJWT()}>Send</button> : null;       
         let sendButton = <button onClick={() => this.sendCRJWT()}>Send</button>;       
-
 
         let sendData = this.state.account ? <div>{toRecepient}{messageToSend}{sendButton}</div>: null;
 
