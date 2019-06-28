@@ -19,6 +19,8 @@ Consent manager with pure awesomenes of FDS.js
 
 ## Fairdata.js test implementation 
  fairdata.js library uses fds.js library to send consent receipt files over Swarm to another account
+
+ to run it uncomment line 35 in App.js
  
  1. create account  
  2. unlock account 
@@ -31,6 +33,7 @@ Consent manager with pure awesomenes of FDS.js
  9. decode token and verify 
  10. log out all messages that are cr.jwt tokens
  
+
  ## sample data 
 
  
