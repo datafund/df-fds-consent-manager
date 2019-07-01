@@ -20,12 +20,11 @@
 import Consent from "./Consent.js"
 
 let ConsentManagerContract = require('../contracts/ConsentManager.json');
-let ConsentContract = require('../contracts/Consent.json');
 
 class ConsentManager {
 
     constructor(FDSAccount) {
-        let contractAddress = '0xdF5d8942342a06EF0ddC46E564a7963DF71eA23B';
+        let contractAddress = '0xB57caE1557420Ed7bD4Dc9647a6e51c509F81893'; 
         this.account = FDSAccount;
         this.cm = FDSAccount.getContract(ConsentManagerContract.abi, ConsentManagerContract.bytecode, contractAddress);
     }
@@ -59,7 +58,7 @@ class ConsentManager {
 
     // update existing consents with new location
     updateConsent(consentAddress, swarmHash){
-      return this.cm.call('updateConsent', [consentAddress, swarmHash]);
+       return this.cm.send('updateConsent', [consentAddress, swarmHash]);
     }
 
 }

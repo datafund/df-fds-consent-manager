@@ -81,48 +81,68 @@ export const RunTestDataReceiptLib = async (FDSConfig) => {
     console.log("User   :" + userAddress);
     console.log("Subject:" + subjectAddress);
     
-    let CM1 = await fd.getConsentManager(); 
-    let tx = await CM1.createConsent(userAddress, subjectAddress, "0x" + swarmHash);
+    let CM = await fd.getConsentManager(); 
+    let tx = await CM.createConsent(userAddress, subjectAddress, "0x" + swarmHash);
     //console.log(tx); // transaction finished
 
-    let uc = await CM1.getUserConsents();
+    let uc = await CM.getUserConsents();
     console.log('user consents', uc); // user consents
 
-    let sc = await CM1.getSubjectConsents();
+    let sc = await CM.getSubjectConsents();
     console.log('subject consents', sc); // subject consents
 
-    let cf = await CM1.getConsentsFor("0x" + swarmHash);
+    let cf = await CM.getConsentsFor("0x" + swarmHash); // consents for swarm hash location
     console.log('consents for swarmHash', cf);
+   
 
+    // sign last user consent as user 
+    let consent = await fd.getConsent(uc[uc.length - 1]); 
+    console.log("Location of data", consent.swarmHash);
+
+    let us = await consent.isUserSigned();
+    if (us === false) {
+        console.log("Signing last consent as user", userAddress);
+        await consent.signUser();
+    }
+    // since both parties are from same account
+    let ss = await consent.isSubjectSigned();
+    if (ss === false) {
+        console.log("Signing last consent as subject ", subjectAddress);
+        await consent.signSubject();
+    }
+
+    if (uc.length > 2)
+    {
+        let prevConsentAddress = uc[uc.length - 2];
+        let tx = await CM.updateConsent(prevConsentAddress, "0x" + swarmHash); // consents for swarm hash location
+        console.log('updating consent', prevConsentAddress, tx);
+    }
+
+     
     // lets check all user consents 
+    uc = await CM.getUserConsents();
     await fd.asyncForEach(uc, async (consentAddress) => {
         let consent = await fd.getConsent(consentAddress);
-        let us, ss, s, v;
+        let us, ss, s, v, updated, status;
 
         us = await consent.isUserSigned();
         ss = await consent.isSubjectSigned();
         s = await consent.isSigned();
+        v = await consent.isValid();
+        
+        updated = await consent.isUpdatedWith(); // if anything else than 0x0000000000000000000000000000000000000000
+        // 0 - waiting for signatures
+        // 1 - active 
+        // 2 - expired
+        // 3 - revoked 
+        status = await consent.status(); 
 
-        console.log(consentAddress, ' signed (subject, user, both)', ss, us, s);
-    });
+        console.log(consentAddress, 'signed (subject, user, both, valid)', ss, us, s, v);
+        console.log('status', status, ' updated', updated);
+    }); 
 
-    // sign last user consent as user 
-    let last_user_consent = await fd.getConsent(uc[uc.length - 1]); 
-    let us = await last_user_consent.isUserSigned();
-    if (us === false) {
-        console.log("Signing last consent as user");
-        console.log(last_user_consent.swarmHash);
-        await last_user_consent.signUser();
-    }
-    // since both parties are from same account
-    let ss = await last_user_consent.isSubjectSigned();
-    if (ss === false) {
-        console.log("Signing last consent as subject");
-        console.log(last_user_consent.swarmHash);
-        await last_user_consent.signSubject();
-    }
-
-    let messages    = await fd.getReceivedMessages(true); 
+    // get all received messages 
+    let messages = await fd.getReceivedMessages(true); 
 
     console.log(messages);
 

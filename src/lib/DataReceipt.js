@@ -15,7 +15,7 @@
 
 import jwt from "jsonwebtoken";
 
-import Consent from './consent/Consent.js';
+//import Consent from './consent/Consent.js';
 import ConsentManager from './consent/ConsentManager.js';
 
 class DataReceiptLib {

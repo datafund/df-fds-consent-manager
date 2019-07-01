@@ -93,6 +93,13 @@ class Consent {
       return await this.con.send('revokeConsent', []);
     }
 
+    async isUpdatedWith() {
+        return await this.con.call('updatedConsent', []);
+    }
+
+    async status() {
+        return await this.con.call('status', []);
+    }
 }
 
 export default Consent
