@@ -65,32 +65,35 @@ export const RunTestDataReceiptLib = async (FDSConfig) => {
     //let accountName = 'testconsentaccount' + Math.floor(Math.random() * 101010101); 
     let accountName = 'testconsentaccount99987212'; 
     let subjectName = accountName; 
-    let newAccount  = await fd.createAccount(accountName, password);
-    let account     = await fd.unlockAccount(accountName, password);
-    let loadPrivKey = await fd.loadPrivateKey(privateKey);
-    let loadSuccess = await fd.loadProject(project);
-    let signedToken = await fd.generateToken(); 
+    let newAccount  = await fd.createAccount(accountName, password); // create account (will fail if it exists)
+    let account     = await fd.unlockAccount(accountName, password); // account
+    let loadPrivKey = await fd.loadPrivateKey(privateKey); // set privatekey
+    let loadSuccess = await fd.loadProject(project); // load project
+    let signedToken = await fd.generateToken();  // sign token from project
+    
+    let swarmHash = await fd.sendDataReceipt(signedToken, accountName); // where is cr.jwt stored?
 
-    let swarmHash = await fd.sendDataReceipt(signedToken, accountName);
-
-    //
+    // BEWARE: sample is sending from newAccount to newAccount 
     console.log(fd.account); 
     let userAddress    = fd.account.address;
     let subjectAddress = await fd.account.getAddressOf(subjectName);
 
     console.log("User   :" + userAddress);
     console.log("Subject:" + subjectAddress);
-    
+    // get consent manager
     let CM = await fd.getConsentManager(); 
     let tx = await CM.createConsent(userAddress, subjectAddress, "0x" + swarmHash);
     //console.log(tx); // transaction finished
 
+    // get existing consents where account is user
     let uc = await CM.getUserConsents();
     console.log('user consents', uc); // user consents
 
+    // get existing consents where account is subject
     let sc = await CM.getSubjectConsents();
     console.log('subject consents', sc); // subject consents
 
+    // get consents for swarmHash 
     let cf = await CM.getConsentsFor("0x" + swarmHash); // consents for swarm hash location
     console.log('consents for swarmHash', cf);
    
@@ -98,7 +101,7 @@ export const RunTestDataReceiptLib = async (FDSConfig) => {
     // sign last user consent as user 
     let consent = await fd.getConsent(uc[uc.length - 1]); 
     console.log("Location of data", consent.swarmHash);
-
+    // check if its signed by user
     let us = await consent.isUserSigned();
     if (us === false) {
         console.log("Signing last consent as user", userAddress);
@@ -113,13 +116,14 @@ export const RunTestDataReceiptLib = async (FDSConfig) => {
 
     if (uc.length > 2)
     {
+        // lets update previous consent 
         let prevConsentAddress = uc[uc.length - 2];
         let tx = await CM.updateConsent(prevConsentAddress, "0x" + swarmHash); // consents for swarm hash location
         console.log('updating consent', prevConsentAddress, tx);
     }
 
      
-    // lets check all user consents 
+    // display and check all user consents 
     uc = await CM.getUserConsents();
     await fd.asyncForEach(uc, async (consentAddress) => {
         let consent = await fd.getConsent(consentAddress);
