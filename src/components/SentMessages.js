@@ -50,10 +50,10 @@ class SentMessages extends React.Component {
     }
     async addSent(msg) {
         try {
-            msg.decodedToken = await this.props.consentGen.decode(msg.data); //, { complete: true });
+            msg.decodedToken = await this.props.dataReceiptLib.decode(msg.data); //, { complete: true });
 
             if (msg.decodedToken !== null) {
-                msg.verified = await this.props.consentGen.verify(msg.decodedToken.payload.publicKey, msg.data);
+                msg.verified = await this.props.dataReceiptLib.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
         } catch (err) { console.error(err); }
 

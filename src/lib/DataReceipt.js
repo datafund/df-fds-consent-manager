@@ -15,7 +15,10 @@
 
 import jwt from "jsonwebtoken";
 
-class Fairdata {
+import Consent from './consent/Consent.js';
+import ConsentManager from './consent/ConsentManager.js';
+
+class DataReceiptLib {
     constructor() {
         this.options = {};
         this.account = null;
@@ -24,6 +27,7 @@ class Fairdata {
         this.receiving = false;
         this.receivedMessages = [];
         this.multiboxData = [];
+        this.consentManager = null;
     }
 
 
@@ -40,9 +44,10 @@ class Fairdata {
     async unlockAccount(subdomain, password) {
         this.account = await window.FDS.UnlockAccount(subdomain.toLowerCase(), password);
         await this.checkDomain(window.FDS.applicationDomain);
+
+        this.consentManager = new ConsentManager(this.account);
         return this.account;
     }
-
 
     //////////////////////////////////////////////////////////////////////////////////////
     // check proper domain exists for account
@@ -62,14 +67,26 @@ class Fairdata {
 
         if (callback) callback("Application node", applicationNodeExists);
 
+        
+
         return applicationNodeExists;
     }
     /** retrieve multibox data 
      * */
     async getMultiboxData() {
         this.multiboxData = await this.account.Mail.Multibox.traverseMultibox(this.account, this.account.subdomain);
-        console.log(this.multiboxData);
+        //console.log(this.multiboxData);
         return this.multiboxData;
+    }
+
+    async getConsentManager() {
+        return this.consentManager;
+    }
+
+    async getConsent(consentContractAddress) {
+        let consentContract = await this.consentManager.getConsentAt(consentContractAddress);
+        await consentContract.getSwarmHash();
+        return consentContract;
     }
 
     // import account 
@@ -101,22 +118,39 @@ class Fairdata {
         this.privateKey = privateKey;
         return this.privateKey;
     }
-    async generateToken(errorCallback = console.log, callback=console.log) {
-        if (this.account === null || this.privateKey === null || this.project === null) {
-            if (errorCallback) errorCallback("invalid setup");
+    async generateToken(errorCallback = console.log, callback = console.log) {
+        if (this.account === null) {
+            if (errorCallback) errorCallback("invalid account");
+        }
+        if (this.privateKey === null || this.project === null) {
+            if (errorCallback) errorCallback("invalid project setup");
         }
         if (callback) callback("generating token from project");
         return await this.generate(this.project.formData, this.privateKey, this.project.defaultProperties.tokenSigningOptions);
     }
-    async sendToken(token, toAccountSubdomain, errorCallback = console.log, callback = console.log) {
+    /**
+     * 
+     * @param {any} token
+     * @param {any} toAccountSubdomain
+     * @param {any} errorCallback
+     * @param {any} callback
+     * @returns {hash} swarm location hash
+     */
+    async sendDataReceipt(token, toAccountSubdomain, errorCallback = console.log, callback = console.log) {
+        if (this.account === null) {
+            if (errorCallback) errorCallback("invalid account receiving and sending will not work");
+            return;
+        }
+
         if (callback) callback(`${this.account.subdomain} sending to ${toAccountSubdomain}`);
         let r = Math.floor(Date.now());
         let file = new File([`${token}`], `${r}.cr.jwt`, { type: 'application/jwt' });
 
         try {
-            let result = await this.account.send(toAccountSubdomain, file, window.FDS.applicationDomain, callback, callback, callback);
-            if(callback) callback(`${this.account.subdomain} sent ${result} >>>> ${toAccountSubdomain}`);
-            return result;
+            let resultHash = await this.account.send(toAccountSubdomain, file, window.FDS.applicationDomain, callback, callback, callback);
+
+            if (callback) callback(`${this.account.subdomain} sent ${resultHash} >>>> ${toAccountSubdomain}`);
+            return resultHash;
         } catch (err) {
             if (errorCallback) errorCallback(err);
             try {
@@ -127,7 +161,15 @@ class Fairdata {
             }
         }
     }
-    async getReceivedMessages(downloadCallback=null, decryptionCallback=null, errorCallback=null, callback=null) {
+    /**
+     * Get All Messages Account Received
+     * @param {any} decodeAndVerifyToken  each message that is cr.jwt will be decoded and signature verified 
+     * @param {any} downloadCallback callback
+     * @param {any} decryptionCallback callback
+     * @param {any} errorCallback callback
+     * @param {any} callback callback
+     */
+    async getReceivedMessages(decodeAndVerifyToken=false, downloadCallback=null, decryptionCallback=null, errorCallback=null, callback=null) {
         
         if (this.account === null) {
             if (errorCallback) errorCallback("no account");
@@ -138,23 +180,22 @@ class Fairdata {
             return this.receivedMessages;
         }
 
-        this.receiving = true;
+        this.receiving = true; // avoid pileing 
 
         let messages = await this.account.messages('received', window.FDS.applicationDomain);
         var reader = new FileReader();
-
         
         await this.asyncForEach(messages, async (message) => {
             var file = await message.getFile(); // what if this fails? 
             var isCRJWT = await this.IsConsentRecepit(file.name);
-            var id = await this.hashFnv32a(message.hash.address);
+            var id = message.hash.address;
 
             // was not yet added
             if (!await this.findReceived(id)) {
                 let context = this; 
                 reader.onload = function (e) {
                     //let content = ExtractMessage(reader.result); 
-                    context.addReceivedMessage({ id: id, message: message, data: reader.result, isConsentRecepit: isCRJWT, decodedToken: null, verified: false }, errorCallback, callback);
+                    context.addReceivedMessage(decodeAndVerifyToken, { id: id, message: message, data: reader.result, isConsentRecepit: isCRJWT, decodedToken: null, verified: false, signed:null }, errorCallback, callback);
                     if(callback) callback(id, message);
                 }
                 await reader.readAsText(await this.account.receive(message, decryptionCallback, downloadCallback));
@@ -163,23 +204,57 @@ class Fairdata {
         if (this.receiving === false) return;
         return this.receivedMessages;
     }
-
-
-    async decodeTokenFrom(receivedMessage, errorCallback=null, callback=null) {
+    /**
+     * adds recevied message, also decodes token and verifies signature 
+     * @param {any} decodeAndVerifyToken
+     * @param {any} receivedMessage
+     * @param {any} errorCallback
+     * @param {any} callback
+     */
+    async addReceivedMessage(decodeAndVerifyToken, receivedMessage, errorCallback = null, callback = null) {
         try {
-            receivedMessage.decodedToken = await this.decode(receivedMessage.data); 
-            if (receivedMessage.decodedToken !== null) {
-                receivedMessage.verified = await this.verify(receivedMessage.decodedToken.payload.publicKey, receivedMessage.data);
-                if (callback) callback(receivedMessage, receivedMessage.verified, receivedMessage.decodedToken);
-            }
+            if (decodeAndVerifyToken)
+                await this.decodeTokenFrom(receivedMessage, errorCallback, callback);
+
+            this.receivedMessages.push(receivedMessage);
+            if (callback) callback("added", receivedMessage);
         } catch (err) { if (errorCallback) errorCallback(err); }
     }
 
-    async addReceivedMessage(receivedMessage, errorCallback = null, callback = null) {
+    /**
+     * Decodes token from message 
+     * { 
+     *    id: int - must be unique, could be message.hash.address, 
+     *    message: pointer to fds.message, 
+     *    data: contents of file, 
+     *    isConsentRecepit: bool,
+     *    decodedToken: null, 
+     *    signed: signature info 
+     *    verified: bool
+     * }
+     * @param {any} receivedMessage
+     * @param {any} errorCallback
+     * @param {any} callback
+     */
+    async decodeTokenFrom(receivedMessage, errorCallback = null, callback = null) {
         try {
-            await this.decodeTokenFrom(receivedMessage, errorCallback, callback);
-            this.receivedMessages.push(receivedMessage);
-            //if (callback) callback("added", receivedMessage);
+            receivedMessage.decodedToken = await this.decode(receivedMessage.data);
+            if (receivedMessage.decodedToken !== null) {
+
+                let tokenOptions = {
+                    "issuer": receivedMessage.decodedToken.payload.iss, //"Datafund",
+                    "subject": receivedMessage.decodedToken.payload.sub, // "Consent Receipt",
+                    "audience": receivedMessage.decodedToken.payload.aud, //"https://datafund.io",
+                    //"expiresIn": "48h",
+                    "algorithm": receivedMessage.decodedToken.header.alg
+                }
+
+                receivedMessage.signed = await this.verify(receivedMessage.decodedToken.payload.publicKey, receivedMessage.data, tokenOptions, callback);
+
+                receivedMessage.verified = receivedMessage.signed !== false;
+
+                if (callback) callback(receivedMessage, receivedMessage.verified, receivedMessage.decodedToken);
+            }
         } catch (err) { if (errorCallback) errorCallback(err); }
     }
 
@@ -221,15 +296,7 @@ class Fairdata {
 
     //////////////////////////////////////////////////////////////////////////////////////
     // Helper functions 
-    async hashFnv32a(str) {
-        var i, l, hval = 0x811c9dc5;
 
-        for (i = 0, l = str.length; i < l; i++) {
-            hval ^= str.charCodeAt(i);
-            hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
-        }
-        return hval >>> 0;
-    }
     async asyncForEach(array, callback) {
         for (let index = 0; index < array.length; index++) {
             await callback(array[index], index, array);
@@ -255,4 +322,4 @@ class Fairdata {
 
 }
 
-export default Fairdata;
+export default DataReceiptLib;

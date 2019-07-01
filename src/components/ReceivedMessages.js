@@ -63,7 +63,7 @@ class ReceiveMessages extends React.Component {
 
         if (this.state.account === null) {
             if (mustUpdate || this.props.account !== undefined) {
-                this.setAccount(this.props.account);
+                this.setAccount(this.props.account); 
                 this.forceUpdate();
             }
         }
@@ -71,15 +71,15 @@ class ReceiveMessages extends React.Component {
     }
 
     async setAccount(acc) {
-        await this.setState({ account: acc });
+        await this.setState({ account: acc }); 
         //await this.updateMultibox(acc);
     }
     async addReceived(msg) {
         try {
-            msg.decodedToken = await this.props.consentGen.decode(msg.data); //, { complete: true });
+            msg.decodedToken = await this.props.dataReceiptLib.decode(msg.data); //, { complete: true });
 
             if (msg.decodedToken !== null) {
-                msg.verified = await this.props.consentGen.verify(msg.decodedToken.payload.publicKey, msg.data);
+                msg.verified = await this.props.dataReceiptLib.verify(msg.decodedToken.payload.publicKey, msg.data);
             }
 
             //console.log(msg);

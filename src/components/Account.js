@@ -66,7 +66,7 @@ class Account extends React.Component {
         var multiboxData = await account.Mail.Multibox.traverseMultibox(account, account.subdomain);
         this.setMultiboxData(multiboxData);
 
-        console.log(multiboxData);
+        //console.log(multiboxData);
     }
     async checkApllicationDomain(account) {
         //let applicationNodeExists = await account.Mail.Multibox.createPath(account, this.props.applicationDomain, this.state.multiboxData.id);

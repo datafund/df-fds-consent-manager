@@ -30,7 +30,7 @@ class AccountLogin extends React.Component {
             accountPass: ""
         }
 
-        //this.unlockAccount("consent1xoxo115", "test");
+        this.unlockAccount("consent1xoxo115", "test");
     }
     async createAccount(accountName, password) {
         if (accountName.length < 3) {
