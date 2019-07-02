@@ -1,4 +1,4 @@
-// fairdata.js library uses fds.js library to send consent receipt files over Swarm to another account
+// datareceipt.js library uses fds.js library to send consent receipt files over Swarm to another account
 // 
   
 import DataReceiptLib from './DataReceipt.js'; 

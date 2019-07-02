@@ -15,7 +15,6 @@
 // along with the FairDataSociety library. If not, see <http://www.gnu.org/licenses/>.
 
 
-//let Web3Utils = require('web3-utils');
 
 import Consent from "./Consent.js"
 

@@ -1,4 +1,8 @@
-// fairdata.js library uses fds.js library to send consent receipt files over Swarm to another account
+// Datafund  
+// Todo: add license etc 
+// Todo: Authors 
+
+// datareceipt.js library uses fds.js library to send consent receipt files over Swarm to another account
 // 
 // 1. create account 1 
 // 2. unlock account 
