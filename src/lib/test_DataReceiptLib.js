@@ -71,7 +71,7 @@ export const RunTestDataReceiptLib = async (FDSConfig) => {
     let loadSuccess = await fd.loadProject(project); // load project
     let signedToken = await fd.generateToken();  // sign token from project
     
-    let swarmHash = await fd.sendDataReceipt(signedToken, accountName); // where is cr.jwt stored?
+    let swarmHash   = await fd.sendDataReceipt(signedToken, accountName); // where is cr.jwt stored?
 
     // BEWARE: sample is sending from newAccount to newAccount 
     console.log(fd.account); 
@@ -133,8 +133,10 @@ export const RunTestDataReceiptLib = async (FDSConfig) => {
         ss = await consent.isSubjectSigned();
         s = await consent.isSigned();
         v = await consent.isValid();
-        
-        updated = await consent.isUpdatedWith(); // if anything else than 0x0000000000000000000000000000000000000000
+
+        // if updated anything else than 0x0000000000000000000000000000000000000000
+        // then consent was updated with another consent 
+        updated = await consent.isUpdatedWith(); 
         // 0 - waiting for signatures
         // 1 - active 
         // 2 - expired
