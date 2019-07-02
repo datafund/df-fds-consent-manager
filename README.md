@@ -17,8 +17,8 @@ Consent manager with pure awesomenes of FDS.js
 7. run `npm start`
 8. you should be able to access the project using Chrome at http://localhost:3000 
 
-## Fairdata.js test implementation 
- fairdata.js library uses fds.js library to send consent receipt files over Swarm to another account
+## DataReceipt.js test implementation 
+ DataReceipt.js library uses fds.js library to send consent receipt files over Swarm to another account
 
  to run it uncomment line 35 in App.js
  
@@ -33,7 +33,61 @@ Consent manager with pure awesomenes of FDS.js
  9. decode token and verify 
  10. log out all messages that are cr.jwt tokens
  
+ ### ConsentManager and Consent contracts 
 
+ Library provides functionality to create new consents on noordung blockchain. 
+
+####  get consent manager
+    `let CM = await fd.getConsentManager();` 
+    `let tx = await CM.createConsent(userAddress, subjectAddress, "0x" + swarmHash);`
+
+####  Get existing consents where account is user
+    `let uc = await CM.getUserConsents();`
+
+#### Get existing consents where account is subject
+    `let sc = await CM.getSubjectConsents();`
+
+####  Get consents for swarmHash 
+    `let cf = await CM.getConsentsFor("0x" + swarmHash);` 
+
+####  Get consent from address 
+     `let consent = await fd.getConsent(address);` 	 
+
+####  Sign last user consent as user 
+  `let us = await consent.isUserSigned();`
+  `await consent.signUser();`
+
+####  Sign last user consent as subject  
+     `let ss = await consent.isSubjectSigned();`
+     `await consent.signSubject();`
+
+####  Update consent with new location  
+     `let tx = await CM.updateConsent(consent, "0x" + newSwarmHash);`
+
+   Updatin consent will revoke updated one, and create new one. Old one will have property 
+   `updatedConsent` changed from 0x0000000000000000000000000000000000000000  
+
+####  Getting info on updated consents 
+   If updated anything else than address(0x0) then consent was updated with another consent 
+     `updated = await consent.isUpdatedWith();`
+	updated will contain address of updated consent    
+
+#### Checking signatures
+
+      `us = await consent.isUserSigned();`
+      `ss = await consent.isSubjectSigned();`
+      `s = await consent.isSigned();`
+      `v = await consent.isValid();`
+
+#### Checking consent status 
+     `status = await consent.status();` 
+	 Status values: 
+     0 - waiting for signatures
+     1 - active 
+     2 - expired
+     3 - revoked 
+     
+   
  ## sample data 
 
  
