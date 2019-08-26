@@ -6,7 +6,7 @@ Consent manager with pure awesomenes of FDS.js
 
 ## Installation
 
-1. clone the FDS.js repo
+1. clone the [FDS.js](https://github.com/fairDataSociety/fds.js) repo
 2. change directory to the FDS repo (MULTIBOX branch)
 3. run `npm link` in this directory, you should have output similar to...  
 `/Users/user/.nvm/versions/node/v8.11.2/lib/node_modules/fds -> /Users/user/Code/df/FDS`
