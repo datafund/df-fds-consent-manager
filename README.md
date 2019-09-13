@@ -79,13 +79,13 @@ Updating consent will revoke updated one, and create new one. Old one will have 
  `v = await consent.isValid();`
 
 #### Checking consent status 
-  `status = await consent.status();` 
-	 `Status values: `
-     `0 - waiting for signatures`
-     `1 - active `
-     `2 - expired `
-     `3 - revoked `
+```
+  status = await consent.status(); 
+	 Status values: 
+     0 - waiting for signatures
+     1 - active 
+     2 - expired 
+     3 - revoked 
+```
 
 ## Sample data 
-
- 
