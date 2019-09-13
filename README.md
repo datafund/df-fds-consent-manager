@@ -4,7 +4,7 @@ Send your consents securely to other FDS users.
 
 Consent manager with pure awesomenes of FDS.js.
 
-## Installation
+## Installation
 
 1. clone the [FDS.js](https://github.com/fairDataSociety/fds.js) repo
 2. change directory to the FDS repo (**MULTIBOX branch**)
@@ -88,12 +88,10 @@ If updated anything else than address(0x0) then consent was updated with another
 
 #### Checking signatures
 ```
-​```
 us = await consent.isUserSigned();
 ss = await consent.isSubjectSigned();
 s = await consent.isSigned();
-v = await consent.isValid();
-​``` 
+v = await consent.isValid(); 
 ```
 
 #### Checking consent status 
